@@ -44,11 +44,14 @@ login_manager.init_app(app)
 
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 
-# Instead of static URI, give SQLAlchemy a function to fetch tokens
-app.config['SQLALCHEMY_DATABASE_URI'] = get_db_uri()
+# Instead of static URI, give SQLAlchemy a placeholder
+app.config['SQLALCHEMY_DATABASE_URI'] = (
+    f"mysql+pymysql://{db_user}@{rds_host}:{port}/{db_name}"
+)
+
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "connect_args": {
-        "ssl": {"ca": "/etc/ssl/certs/ca-bundle.crt"}  # ensure SSL
+        "ssl": {"ca": "/etc/ssl/certs/ca-bundle.crt"}
     }
 }
 
