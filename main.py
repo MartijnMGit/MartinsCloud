@@ -51,9 +51,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
 
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "connect_args": {
-        "ssl": {"ca": "/etc/ssl/certs/ca-bundle.crt"}
+        "ssl": {"ca": "/home/ec2-user/rds-combined-ca-bundle.pem"}
     }
 }
+
 
 db = SQLAlchemy(app)
 ckeditor = CKEditor(app)
