@@ -10,29 +10,51 @@ from sqlalchemy import Integer, String, Text
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import relationship
-# Import your forms from the forms.py
+# Import forms from the forms.py
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
+import boto3
+from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
 
+# --- Config ---
+region = "us-east-1"                # your AWS region
+db_user = "admin"                   # your RDS master username
+db_name = "martinscloud-db"         # your RDS DB name
+rds_host = "martinscloud-db.cul486skoeso.us-east-1.rds.amazonaws.com"
+port = 3306                         # MySQL default port
 
+# --- Function to generate fresh IAM auth token ---
+def get_iam_token():
+    session = boto3.Session()
+    client = session.client("rds", region_name=region)
+    token = client.generate_db_auth_token(
+        DBHostname=rds_host, Port=port, DBUsername=db_user
+    )
+    return token
+
+# --- Build SQLAlchemy Database URI ---
+def get_db_uri():
+    token = get_iam_token()
+    return f"mysql+pymysql://{db_user}:{token}@{rds_host}:{port}/{db_name}"
+
+# --- Flask App Config ---
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
-
-app.config['CKEDITOR_CUSTOM_CDN'] = '/static/ckeditor/ckeditor.js'
-
-
-ckeditor = CKEditor(app)
-Bootstrap5(app)
-
-# Configure Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 
-@login_manager.user_loader
-def load_user(user_id):
-    return db.get_or_404(User, user_id)
+# Instead of static URI, give SQLAlchemy a function to fetch tokens
+app.config['SQLALCHEMY_DATABASE_URI'] = get_db_uri()
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    "connect_args": {
+        "ssl": {"ca": "/etc/ssl/certs/ca-bundle.crt"}  # ensure SSL
+    }
+}
 
-
+db = SQLAlchemy(app)
+ckeditor = CKEditor(app)
+Bootstrap5(app)
 # For adding profile images to the comment section
 gravatar = Gravatar(app,
                     size=100,
@@ -43,12 +65,18 @@ gravatar = Gravatar(app,
                     use_ssl=False,
                     base_url=None)
 
-# CREATE DATABASE
-class Base(DeclarativeBase):
-    pass
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
-db = SQLAlchemy(model_class=Base)
-db.init_app(app)
+
+# --- Ensure SQLAlchemy regenerates token before reconnect ---
+from sqlalchemy import event
+
+@event.listens_for(db.engine, "do_connect")
+def provide_token(dialect, conn_rec, cargs, cparams):
+    cparams["password"] = get_iam_token()
+
+
+
+
+
 
 
 # CONFIGURE TABLES
@@ -99,6 +127,9 @@ class Comment(db.Model):
 with app.app_context():
     db.create_all()
 
+@login_manager.user_loader
+def load_user(user_id):
+    return db.get_or_404(User, user_id)
 
 # Create an admin-only decorator
 def admin_only(f):
