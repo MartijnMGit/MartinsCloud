@@ -72,9 +72,13 @@ gravatar = Gravatar(app,
 # --- Ensure SQLAlchemy regenerates token before reconnect ---
 from sqlalchemy import event
 
-@event.listens_for(db.engine, "do_connect")
-def provide_token(dialect, conn_rec, cargs, cparams):
-    cparams["password"] = get_iam_token()
+# --- Ensure SQLAlchemy regenerates token before reconnect ---
+from sqlalchemy import event
+
+with app.app_context():
+    @event.listens_for(db.engine, "do_connect")
+    def provide_token(dialect, conn_rec, cargs, cparams):
+        cparams["password"] = get_iam_token()
 
 
 
