@@ -1,0 +1,270 @@
+Description: MartinsCloud - VPC
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.16.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MartinsCloud
+  IPv6CidrBlock:
+    Type: AWS::EC2::VPCCidrBlock
+    Properties:
+      VpcId: !Ref VPC
+      AmazonProvidedIpv6CidrBlock: true
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: MartinsCloud-IGW
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  RTPub:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: MartinsCloud-vpc-rt-pub
+  RTPubDefaultIPv4:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref RTPub
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  RTPubDefaultIPv6:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref RTPub
+      DestinationIpv6CidrBlock: '::/0'
+      GatewayId: !Ref InternetGateway
+  RTAssociationPubA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SNPUBA
+      RouteTableId: !Ref RTPub
+  RTAssociationPubB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SNPUBB
+      RouteTableId: !Ref RTPub
+  RTAssociationPubC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SNPUBC
+      RouteTableId: !Ref RTPub
+  SNDBA:
+    Type: AWS::EC2::Subnet
+    DependsOn: IPv6CidrBlock
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
+      CidrBlock: 10.16.16.0/20
+      AssignIpv6AddressOnCreation: true
+      Ipv6CidrBlock: !Sub
+        - ${VpcPart}${SubnetPart}
+        - SubnetPart: 01::/64
+          VpcPart: !Select
+            - 0
+            - !Split
+              - 00::/56
+              - !Select
+                - 0
+                - !GetAtt VPC.Ipv6CidrBlocks
+      Tags:
+        - Key: Name
+          Value: sn-db-A
+  SNDBB:
+    Type: AWS::EC2::Subnet
+    DependsOn: IPv6CidrBlock
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs ''
+      CidrBlock: 10.16.80.0/20
+      AssignIpv6AddressOnCreation: true
+      Ipv6CidrBlock: !Sub
+        - ${VpcPart}${SubnetPart}
+        - SubnetPart: 05::/64
+          VpcPart: !Select
+            - 0
+            - !Split
+              - 00::/56
+              - !Select
+                - 0
+                - !GetAtt VPC.Ipv6CidrBlocks
+      Tags:
+        - Key: Name
+          Value: sn-db-B
+  SNDBC:
+    Type: AWS::EC2::Subnet
+    DependsOn: IPv6CidrBlock
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - 2
+        - !GetAZs ''
+      CidrBlock: 10.16.144.0/20
+      AssignIpv6AddressOnCreation: true
+      Ipv6CidrBlock: !Sub
+        - ${VpcPart}${SubnetPart}
+        - SubnetPart: 09::/64
+          VpcPart: !Select
+            - 0
+            - !Split
+              - 00::/56
+              - !Select
+                - 0
+                - !GetAtt VPC.Ipv6CidrBlocks
+      Tags:
+        - Key: Name
+          Value: sn-db-C
+  SNAPPA:
+    Type: AWS::EC2::Subnet
+    DependsOn: IPv6CidrBlock
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
+      CidrBlock: 10.16.32.0/20
+      AssignIpv6AddressOnCreation: true
+      Ipv6CidrBlock: !Sub
+        - ${VpcPart}${SubnetPart}
+        - SubnetPart: 02::/64
+          VpcPart: !Select
+            - 0
+            - !Split
+              - 00::/56
+              - !Select
+                - 0
+                - !GetAtt VPC.Ipv6CidrBlocks
+      Tags:
+        - Key: Name
+          Value: sn-app-A
+  SNAPPB:
+    Type: AWS::EC2::Subnet
+    DependsOn: IPv6CidrBlock
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs ''
+      CidrBlock: 10.16.96.0/20
+      AssignIpv6AddressOnCreation: true
+      Ipv6CidrBlock: !Sub
+        - ${VpcPart}${SubnetPart}
+        - SubnetPart: 06::/64
+          VpcPart: !Select
+            - 0
+            - !Split
+              - 00::/56
+              - !Select
+                - 0
+                - !GetAtt VPC.Ipv6CidrBlocks
+      Tags:
+        - Key: Name
+          Value: sn-app-B
+  SNAPPC:
+    Type: AWS::EC2::Subnet
+    DependsOn: IPv6CidrBlock
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - 2
+        - !GetAZs ''
+      CidrBlock: 10.16.160.0/20
+      AssignIpv6AddressOnCreation: true
+      Ipv6CidrBlock: !Sub
+        - ${VpcPart}${SubnetPart}
+        - SubnetPart: 0A::/64
+          VpcPart: !Select
+            - 0
+            - !Split
+              - 00::/56
+              - !Select
+                - 0
+                - !GetAtt VPC.Ipv6CidrBlocks
+      Tags:
+        - Key: Name
+          Value: sn-app-C
+  SNPUBA:
+    Type: AWS::EC2::Subnet
+    DependsOn: IPv6CidrBlock
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
+      CidrBlock: 10.16.48.0/20
+      MapPublicIpOnLaunch: true
+      Ipv6CidrBlock: !Sub
+        - ${VpcPart}${SubnetPart}
+        - SubnetPart: 03::/64
+          VpcPart: !Select
+            - 0
+            - !Split
+              - 00::/56
+              - !Select
+                - 0
+                - !GetAtt VPC.Ipv6CidrBlocks
+      Tags:
+        - Key: Name
+          Value: sn-pub-A
+  SNPUBB:
+    Type: AWS::EC2::Subnet
+    DependsOn: IPv6CidrBlock
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs ''
+      CidrBlock: 10.16.112.0/20
+      MapPublicIpOnLaunch: true
+      Ipv6CidrBlock: !Sub
+        - ${VpcPart}${SubnetPart}
+        - SubnetPart: 07::/64
+          VpcPart: !Select
+            - 0
+            - !Split
+              - 00::/56
+              - !Select
+                - 0
+                - !GetAtt VPC.Ipv6CidrBlocks
+      Tags:
+        - Key: Name
+          Value: sn-pub-B
+  SNPUBC:
+    Type: AWS::EC2::Subnet
+    DependsOn: IPv6CidrBlock
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - 2
+        - !GetAZs ''
+      CidrBlock: 10.16.176.0/20
+      MapPublicIpOnLaunch: true
+      Ipv6CidrBlock: !Sub
+        - ${VpcPart}${SubnetPart}
+        - SubnetPart: 0B::/64
+          VpcPart: !Select
+            - 0
+            - !Split
+              - 00::/56
+              - !Select
+                - 0
+                - !GetAtt VPC.Ipv6CidrBlocks
+      Tags:
+        - Key: Name
+          Value: sn-pub-C

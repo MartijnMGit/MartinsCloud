@@ -1,0 +1,56 @@
+{% include "header.html" %}
+
+<!-- Page Header-->
+<header
+  class="masthead"
+  style="background-image: url('../static/assets/img/home-bg.png')"
+>
+  <div class="container position-relative px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+      <div class="col-md-10 col-lg-8 col-xl-7">
+        <div class="site-heading">
+          <h1>Martin's Cloud</h1>
+          <span class="subheading">Designing, building, and deploying cloud-native applications.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+<!-- Main Content-->
+
+<div class="container my-5">
+  <h5>Projects</h5>
+  <hr class="my-4">
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+
+    <div class="col">
+      <div class="card h-100">
+        <img src="{{ url_for('static', filename='../static/assets/img/BlackJackScreen.png') }}" class="card-img-top" alt="image with programming code on a screen">
+        <div class="card-body">
+          <h5 class="card-title">Blackjack Game Web App</h5>
+          <p class="card-text">Developed a Python-based Blackjack game and transformed it into a Flask web application. Deployed the app secure and scalable on AWS.</p>
+          <a href="https://www.martinscloud.be/blackjack" class="btn btn-primary btn-sm" target="_blank">Live App</a>
+          <a href="https://github.com/MartijnMGit/blackjack-python-aws" class="btn btn-outline-dark btn-sm" target="_blank">
+            <i class="fab fa-github"></i> GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card h-100">
+        <img src="{{ url_for('static', filename='../static/assets/img/Blog-Thumbnail.png') }}" class="card-img-top" alt="image with programming code on a screen">
+        <div class="card-body">
+          <h5 class="card-title">Interactive Blog Platform</h5>
+          <p class="card-text">A full-stack Flask application with authentication, CRUD posts, comments, and a SQL database — styled with Bootstrap.</p>
+          <a href="{{ url_for('get_all_posts') }}" class="btn btn-primary btn-sm" target="_blank">Go To Blog</a>
+          <a href="https://github.com/MartijnMGit/blog-flask-sql" class="btn btn-outline-dark btn-sm" target="_blank">
+            <i class="fab fa-github"></i> GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% include "footer.html" %}
