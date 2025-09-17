@@ -19,7 +19,7 @@ from sqlalchemy.engine import URL
 # --- Config ---
 region = "us-east-1"                # your AWS region
 db_user = "admin"                   # your RDS master username
-db_name = "martinscloud-db"         # your RDS DB name
+db_name = "martinscloud"         # your RDS DB name
 rds_host = "martinscloud-db.cul486skoeso.us-east-1.rds.amazonaws.com"
 port = 3306                         # MySQL default port
 
