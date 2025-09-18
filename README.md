@@ -14,3 +14,4 @@ made subnetgroup for rds
 made sg to allow mysql from port 3306 from my ec2 sg
 IAM database authentication instead of static username/password
 Changed main.py to use RDS instead of SQLite
+
