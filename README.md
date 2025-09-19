@@ -14,4 +14,12 @@ made subnetgroup for rds
 made sg to allow mysql from port 3306 from my ec2 sg
 IAM database authentication instead of static username/password
 Changed main.py to use RDS instead of SQLite
+Deleted the local SQLite DB.
+Made new admin user and made new post on the app. Everything works together with RDS as the new DB.
+Now I want to make the app scalable and resilient.
+First I've made AMI from my running App instance,
+used this AMI for the LaunchTemplate,
+Created an ASG and used my existing ALB, to balance between 3 AZ's, from my blackjack flask app that's hosted already.
+Now I use r53 to have the app hosted on MartinsCloud.be instead of the public IP of the EC2.
+
 
