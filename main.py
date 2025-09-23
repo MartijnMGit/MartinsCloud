@@ -1,20 +1,19 @@
 from datetime import date
 from flask import Flask, abort, render_template, redirect, url_for, flash
-from flask_bootstrap import Bootstrap5
+from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 from flask_gravatar import Gravatar
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import Integer, String, Text
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import relationship
+import boto3
 # Import forms from the forms.py
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
-import boto3
-from sqlalchemy import create_engine
-from sqlalchemy.engine import URL
+
 
 # --- Config ---
 region = "us-east-1"                # your AWS region
@@ -58,7 +57,8 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 
 db = SQLAlchemy(app)
 ckeditor = CKEditor(app)
-Bootstrap5(app)
+# Initialize Bootstrap-Flask
+bootstrap = Bootstrap(app)
 # For adding profile images to the comment section
 gravatar = Gravatar(app,
                     size=100,
@@ -73,18 +73,10 @@ gravatar = Gravatar(app,
 # --- Ensure SQLAlchemy regenerates token before reconnect ---
 from sqlalchemy import event
 
-# --- Ensure SQLAlchemy regenerates token before reconnect ---
-from sqlalchemy import event
-
 with app.app_context():
     @event.listens_for(db.engine, "do_connect")
     def provide_token(dialect, conn_rec, cargs, cparams):
         cparams["password"] = get_iam_token()
-
-
-
-
-
 
 
 # CONFIGURE TABLES
