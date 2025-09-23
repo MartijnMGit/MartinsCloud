@@ -175,20 +175,21 @@ Demonstrates comment section and Gravatar integration.
 ![Admin Features Screenshot](./static/assets/screenshots/Create-Blog2.png)
 
 ### 5. Cloud / Deployment Evidence
-- EC2 instance running the Flask app  
-- RDS dashboard with IAM authentication  
-- ALB routing rules and HTTPS setup
-  
+
+- VPC Infrastructure Diagram 
 ![Cloud Infrastructure Screenshot](./static/assets/screenshots/MartinsCloud-VPC.png)
 ---
 ![Cloud Infrastructure Screenshot](./static/assets/screenshots/VPC-Infrastructure-CFN.png)
 ---
+- EC2 instance running the Flask app  
 ![Cloud EC2 Screenshot](./static/assets/screenshots/EC2-Running-App.png)
 ---
+- RDS dashboard with IAM authentication 
 ![Cloud RDS Dashboard Screenshot](./static/assets/screenshots/RDS-dashboard.png)
 ---
 ![Cloud RDS IAM DB Authentication Screenshot](./static/assets/screenshots/RDS-IAM-AUTH.png)
 ---
+- ALB routing rules and HTTPS setup
 ![Cloud ALB Routing Rules Screenshot](./static/assets/screenshots/ALB-Rules.png)
 ---
 ![Cloud ALB HTTPS Setup Screenshot](./static/assets/screenshots/ALB-HTTPS.png)
