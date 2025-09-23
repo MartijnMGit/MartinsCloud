@@ -11,6 +11,7 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import relationship
 import boto3
+
 # Import forms from the forms.py
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 
@@ -142,7 +143,6 @@ def admin_only(f):
         return f(*args, **kwargs)
 
     return decorated_function
-
 
 # Register new users into the User database
 @app.route('/register', methods=["GET", "POST"])
