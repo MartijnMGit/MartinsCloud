@@ -178,7 +178,9 @@ Demonstrates comment section and Gravatar integration.
 - EC2 instance running the Flask app  
 - RDS dashboard with IAM authentication  
 - ALB routing rules and HTTPS setup
-
+  
+![Cloud Infrastructure Screenshot](./static/assets/screenshots/MartinsCloud-VPC.png)
+---
 ![Cloud Infrastructure Screenshot](./static/assets/screenshots/VPC-Infrastructure-CFN.png)
 ---
 ![Cloud EC2 Screenshot](./static/assets/screenshots/EC2-Running-App.png)
