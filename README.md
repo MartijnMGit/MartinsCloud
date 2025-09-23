@@ -1,10 +1,9 @@
 # MartinsCloud Website
 
-![MartinsCloud Logo](./static/assets/img/home-bg.png)
-
 **Personal Website & Portfolio Project**  
 Built with **Python, Flask, HTML, CSS, Bootstrap**, and deployed on **AWS** with a fully automated, scalable, and secure architecture. All infrastructure was provisioned via **CloudFormation YAML scripts**, giving me full control over the environment.
 
+![MartinsCloud Logo](./static/assets/img/home-bg.png)
 ---
 
 ## 🌐 Live Demo
@@ -151,7 +150,9 @@ This project showcases:
 Showcasing custom headers with picture.
 
 ![Homepage Screenshot](./static/assets/screenshots/Homepage.png)
+---
 ![About Me Screenshot](./static/assets/screenshots/About-Me.png)
+---
 ![About Me Screenshot](./static/assets/screenshots/About-Me2.png)
 
 ### 2. Blog Page
@@ -163,12 +164,14 @@ Listing posts with titles, subtitles, and images.
 Demonstrates comment section and Gravatar integration.
 
 ![Post Header Screenshot](./static/assets/screenshots/Blog-post-header.png)
+---
 ![Post with Comments Screenshot](./static/assets/screenshots/Blog-Comments.png)
 
 ### 4. Admin Features
 - Create Post form  
 
 ![Admin Features Screenshot](./static/assets/screenshots/Create-Blog1.png)
+---
 ![Admin Features Screenshot](./static/assets/screenshots/Create-Blog2.png)
 
 ### 5. Cloud / Deployment Evidence
@@ -177,8 +180,13 @@ Demonstrates comment section and Gravatar integration.
 - ALB routing rules and HTTPS setup
 
 ![Cloud Infrastructure Screenshot](./static/assets/screenshots/VPC-Infrastructure-CFN.png)
+---
 ![Cloud EC2 Screenshot](./static/assets/screenshots/EC2-Running-App.png)
+---
 ![Cloud RDS Dashboard Screenshot](./static/assets/screenshots/RDS-dashboard.png)
+---
 ![Cloud RDS IAM DB Authentication Screenshot](./static/assets/screenshots/RDS-IAM-AUTH.png)
+---
 ![Cloud ALB Routing Rules Screenshot](./static/assets/screenshots/ALB-Rules.png)
+---
 ![Cloud ALB HTTPS Setup Screenshot](./static/assets/screenshots/ALB-HTTPS.png)
