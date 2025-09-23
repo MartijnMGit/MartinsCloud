@@ -179,17 +179,20 @@ Demonstrates comment section and Gravatar integration.
 - VPC Infrastructure Diagram 
 ![Cloud Infrastructure Screenshot](./static/assets/screenshots/MartinsCloud-VPC.png)
 ---
+- VPC Infrastructure Diagram
 ![Cloud Infrastructure Screenshot](./static/assets/screenshots/VPC-Infrastructure-CFN.png)
 ---
 - EC2 instance running the Flask app  
 ![Cloud EC2 Screenshot](./static/assets/screenshots/EC2-Running-App.png)
 ---
-- RDS dashboard with IAM authentication 
+- RDS dashboard 
 ![Cloud RDS Dashboard Screenshot](./static/assets/screenshots/RDS-dashboard.png)
 ---
+- RDS IAM authentication 
 ![Cloud RDS IAM DB Authentication Screenshot](./static/assets/screenshots/RDS-IAM-AUTH.png)
 ---
-- ALB routing rules and HTTPS setup
+- ALB routing rules
 ![Cloud ALB Routing Rules Screenshot](./static/assets/screenshots/ALB-Rules.png)
 ---
+- ALB HTTPS setup
 ![Cloud ALB HTTPS Setup Screenshot](./static/assets/screenshots/ALB-HTTPS.png)
