@@ -25,12 +25,12 @@
 
     <div class="col">
       <div class="card h-100">
-        <img src="{{ url_for('static', filename='../static/assets/img/BlackJackScreen.png') }}" class="card-img-top" alt="image with programming code on a screen">
+        <img src="{{ url_for('static', filename='../static/assets/img/Blog-Thumbnail.png') }}" class="card-img-top" alt="image with programming code on a screen">
         <div class="card-body">
-          <h5 class="card-title">Blackjack Game Web App</h5>
-          <p class="card-text">Developed a Python-based Blackjack game and transformed it into a Flask web application. Deployed the app secure and scalable on AWS.</p>
-          <a href="https://www.martinscloud.be/blackjack" class="btn btn-primary btn-sm" target="_blank">Live App</a>
-          <a href="https://github.com/MartijnMGit/blackjack-python-aws" class="btn btn-outline-dark btn-sm" target="_blank">
+          <h5 class="card-title">Interactive Blog Platform</h5>
+          <p class="card-text">A full-stack Flask app with authentication, CRUD posts, comments, and an AWS RDS database — deployed in a custom VPC (CloudFormation) on EC2, backed by an Auto Scaling Group, ALB, and Route 53.</p>
+          <a href="{{ url_for('get_all_posts') }}" class="btn btn-primary btn-sm">Go To Blog</a>
+          <a href="https://github.com/MartijnMGit/blog-flask-sql" class="btn btn-outline-dark btn-sm" target="_blank">
             <i class="fab fa-github"></i> GitHub
           </a>
         </div>
@@ -39,12 +39,12 @@
 
     <div class="col">
       <div class="card h-100">
-        <img src="{{ url_for('static', filename='../static/assets/img/Blog-Thumbnail.png') }}" class="card-img-top" alt="image with programming code on a screen">
+        <img src="{{ url_for('static', filename='../static/assets/img/BlackJackScreen.png') }}" class="card-img-top" alt="image with programming code on a screen">
         <div class="card-body">
-          <h5 class="card-title">Interactive Blog Platform</h5>
-          <p class="card-text">A full-stack Flask application with authentication, CRUD posts, comments, and an AWS RDS database — Launched on AWS EC2.</p>
-          <a href="{{ url_for('get_all_posts') }}" class="btn btn-primary btn-sm">Go To Blog</a>
-          <a href="https://github.com/MartijnMGit/blog-flask-sql" class="btn btn-outline-dark btn-sm" target="_blank">
+          <h5 class="card-title">Blackjack Game Web App</h5>
+          <p class="card-text">Developed a Python-based Blackjack game and transformed it into a Flask web application. Deployed the app secure and scalable on AWS.</p>
+          <a href="https://www.martinscloud.be/blackjack" class="btn btn-primary btn-sm" target="_blank">Live App</a>
+          <a href="https://github.com/MartijnMGit/blackjack-python-aws" class="btn btn-outline-dark btn-sm" target="_blank">
             <i class="fab fa-github"></i> GitHub
           </a>
         </div>
