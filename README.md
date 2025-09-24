@@ -167,8 +167,15 @@ Demonstrates comment section and Gravatar integration.
 ---
 ![Post with Comments Screenshot](./static/assets/screenshots/Blog-Comments.png)
 
+### 4. Register and Log In
+Register screen
+![Register Screen Screenshot](./static/assets/screenshots/Register.png)
+
+Log In screen
+![Log In Screen Screenshot](./static/assets/screenshots/Log-In.png)
+
 ### 4. Admin Features
-- Create Post form  
+Create Post form  
 
 ![Admin Features Screenshot](./static/assets/screenshots/Create-Blog1.png)
 ---
