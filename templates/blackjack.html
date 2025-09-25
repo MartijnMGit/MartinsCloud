@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blackjack</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: monospace;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        pre {
+            font-size: 16px;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+
+        h2 {
+            margin: 10px 0;
+        }
+
+        button {
+            background-color: #222;
+            color: white;
+            border: 1px solid white;
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #444;
+        }
+
+        form {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <pre><code>{{ logo }}</code></pre>
+
+    <h2>Your cards: {{ player_cards }} (Score: {{ player_score }})</h2>
+    <h2>Computer's cards: {{ pc_cards }} (Score: {{ pc_score }})</h2>
+
+    {% if result %}
+        <h2>{{ result }}</h2>
+        <form method="post">
+            <button type="submit" name="restart">Play Again</button>
+        </form>
+    {% else %}
+        <form method="post">
+            <button type="submit" name="hit">Hit</button>
+            <button type="submit" name="stand">Stand</button>
+        </form>
+    {% endif %}
+
+
+    <button id="how-btn" class="how-btn">How It Works?</button>
+
+    <div id="how-balloon" class="how-balloon" style="display: none;">
+      <div class="how-content">
+        <strong>How Blackjack Works</strong>
+        <p>
+          • You and the computer each start with 2 cards.<br>
+          • Click <strong>Hit</strong> to draw another card, or <strong>Stand</strong> to stop.<br>
+          • Going over 21 = bust → you lose.<br>
+          • Closest to 21 without busting wins.<br>
+          • Aces count as 11 or 1 — whichever helps most.
+        </p>
+      </div>
+    </div>
+
+    <script>
+      const howBtn = document.getElementById('how-btn');
+      const howBalloon = document.getElementById('how-balloon');
+
+      howBtn.addEventListener('click', () => {
+        if (howBalloon.style.display === 'none') {
+          howBalloon.style.display = 'block';
+        } else {
+          howBalloon.style.display = 'none';
+        }
+      });
+    </script>
+</body>
+</html>
