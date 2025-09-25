@@ -131,6 +131,45 @@ python main.py
 
 ---
 
+## 🔀 Multi-App Integration & AWS Optimization (Blackjack Game)
+
+**Objective:** Merge projects, reduce AWS costs, and simplify deployment architecture.
+
+**Key Steps & Decisions:**
+
+- **Merged Blackjack Game into Main Flask Project**  
+  Consolidated two separate Flask apps into a single project to reduce EC2 usage and simplify architecture.  
+
+- **Secrets Management**  
+  Replaced hard-coded Flask secret key with **AWS SSM Parameter Store**, ensuring secure secret retrieval via EC2 IAM roles.  
+
+- **ALB & Traffic Routing**  
+  Originally, the Blackjack app used a **Beanstalk-created ALB**, which also handled routing for the main project.  
+  To safely delete the Beanstalk environment:  
+  1. Created a **new ALB** manually and attached the **existing ACM certificates** for HTTPS  
+  2. Configured an **HTTP listener** to automatically redirect traffic to HTTPS  
+  3. Updated **Route 53** to point at the new ALB  
+  4. All application routing, including `/blackjack`, is now handled **inside the Flask app**; no need for separate ALB target groups per app  
+  5. Once traffic flowed through the new ALB, the Beanstalk environment (and its ALB) could be safely deleted  
+
+- **Deployment Workflow**  
+  Pulled latest code on EC2 (`git pull origin master`) and restarted the Flask app using systemd/Gunicorn.  
+
+- **IAM & Permissions**  
+  Configured EC2 instance role (`EC2AccesRDSRole`) to securely retrieve secrets from SSM.  
+
+**Outcome / Skills Demonstrated:**  
+- AWS Free Tier optimization (EC2, ALB, ASG)  
+- Infrastructure simplification & cost reduction  
+- Secure secret management with SSM & IAM roles  
+- Load balancing and traffic migration between ALBs  
+- ACM certificate integration and HTTP → HTTPS redirection  
+- Application-level routing with Flask for multi-app support  
+- Elastic Beanstalk cleanup and independent infrastructure management  
+- Multi-app Flask deployment and integration
+
+---
+
 ## 🔑 Key Takeaways
 
 This project showcases:
@@ -139,8 +178,12 @@ This project showcases:
 - Cloud infrastructure design and deployment on AWS
 - Security best practices: IAM, SSL, secure database access
 - Scalable, resilient architecture using multiple AZs
+- Multi-app integration and application-level routing for different endpoints
+- Load balancing and traffic management using ALB
+- ACM certificate integration and HTTPS redirection
 - Ability to take a project from local development → production in the cloud
 - Strong design sense with custom graphics and UI polish
+- AWS Free Tier cost optimization and infrastructure simplification
 
 ---
 
