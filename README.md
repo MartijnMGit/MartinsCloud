@@ -121,12 +121,14 @@ python main.py
 
 ## ✨ Highlights & Challenges
 
-- Fully manual VPC setup with private/public subnets, route tables, IGW, and security groups
-- AWS IAM authentication for RDS instead of traditional username/password
-- Running Flask app in production with Gunicorn + systemd and Nginx
-- Multi-AZ scalable architecture with ALB and ASG
-- Redeployed existing Blackjack project on the same self-configured VPC to reuse the ALB, as cross-VPC routing is not possible
-- Hands-on CloudFormation YAML scripting for reproducible infrastructure
+- **Fully manual VPC setup** with private/public subnets, route tables, IGW, and security groups  
+- **AWS IAM authentication** for RDS instead of traditional username/password  
+- **Running Flask app in production** with Gunicorn + systemd and Nginx  
+- **Multi-AZ scalable architecture** with ALB and ASG  
+- **Custom AMI + Launch Template with user data** to automatically pull the latest code and restart the Flask app during Auto Scaling events  
+- **Redeployed Blackjack project** on the same self-configured VPC to reuse the ALB  
+- Hands-on **CloudFormation YAML scripting** for reproducible infrastructure  
+
 💡 Previous projects used Elastic Beanstalk for deployment. This project intentionally avoids it, proving mastery of full AWS architecture and automation.
 
 ---
@@ -152,8 +154,8 @@ python main.py
   4. All application routing, including `/blackjack`, is now handled **inside the Flask app**; no need for separate ALB target groups per app  
   5. Once traffic flowed through the new ALB, the Beanstalk environment (and its ALB) could be safely deleted  
 
-- **Deployment Workflow**  
-  Pulled latest code on EC2 (`git pull origin master`) and restarted the Flask app using systemd/Gunicorn.  
+- **Deployment Workflow & Automation**  
+  All EC2 instances launched by the Auto Scaling Group automatically pull the latest code from GitHub and restart the Flask app using Gunicorn/systemd. This is handled by the **user-data   script in the Launch Template**, ensuring the application stays up-to-date across all scaled instances without any manual intervention.
 
 - **IAM & Permissions**  
   Configured EC2 instance role (`EC2AccesRDSRole`) to securely retrieve secrets from SSM.  
