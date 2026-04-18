@@ -312,6 +312,7 @@ def blackjack():
         session["pc_cards"] = [deal_card(), deal_card()]
         session["game_over"] = False
         session["result"] = ""
+        session["outcome"] = ""
 
     player_cards = session["player_cards"]
     pc_cards = session["pc_cards"]
@@ -323,7 +324,7 @@ def blackjack():
             session["player_cards"] = player_cards
             if sum(player_cards) > 21:
                 session["game_over"] = True
-                session["result"] = compare_scores(sum(player_cards), sum(pc_cards))
+                session["result"], session["outcome"] = compare_scores(sum(player_cards), sum(pc_cards))
         elif "stand" in request.form:
             # Computer plays
             pc_cards = adjust_for_ace(pc_cards)
@@ -333,8 +334,7 @@ def blackjack():
 
             session["game_over"] = True
             session["pc_cards"] = pc_cards
-            session["result"] = compare_scores(sum(player_cards), sum(pc_cards))
-
+            session["result"], session["outcome"] = compare_scores(sum(player_cards), sum(pc_cards))
         elif "restart" in request.form:
             session.clear()
             return redirect(url_for("blackjack"))
@@ -346,6 +346,7 @@ def blackjack():
                            player_score=sum(session["player_cards"]),
                            pc_score=sum(session["pc_cards"]) if session["game_over"] else "?",
                            result=session["result"],
+                           outcome=session.get("outcome", ""),
                            game_over=session["game_over"])
 
 if __name__ == "__main__":

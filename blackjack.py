@@ -12,12 +12,12 @@ def adjust_for_ace(hand):
 
 def compare_scores(player_score, pc_score):
     if player_score > 21:
-        return "You went over. You lose 😭"
+        return "You went over. You lose 😭", "lose"
     elif pc_score > 21:
-        return "Opponent went over. You win 😁"
+        return "Opponent went over. You win 😁", "win"
     elif player_score > pc_score:
-        return "You win! 🎉"
+        return "You win! 🎉", "win"
     elif player_score < pc_score:
-        return "You lose 😞"
+        return "You lose 😞", "lose"
     else:
-        return "It's a draw 😐"
+        return "It's a draw 😐", "draw"

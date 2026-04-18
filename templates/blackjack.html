@@ -54,17 +54,24 @@
     <h2>Your cards: {{ player_cards }} (Score: {{ player_score }})</h2>
     <h2>Computer's cards: {{ pc_cards }} (Score: {{ pc_score }})</h2>
 
-    {% if result %}
-        <h2>{{ result }}</h2>
-        <form method="post">
-            <button type="submit" name="restart">Play Again</button>
-        </form>
-    {% else %}
-        <form method="post">
-            <button type="submit" name="hit">Hit</button>
-            <button type="submit" name="stand">Stand</button>
-        </form>
+{% if result %}
+    {% if outcome == "win" %}
+        <img src="https://media4.giphy.com/media/4xpB3eE00FfBm/giphy.gif" alt="You win!" style="width:300px; border-radius:12px; margin:15px 0;">
+    {% elif outcome == "lose" %}
+        <img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExeHFzNGxlcG5kbGcza2d6bzZweDl4M3l5NHZnZHR2OTZyaXRzODlhaiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xku8a1Q2o6UeO3ugPL/giphy.gif" alt="You lose!" style="width:300px; border-radius:12px; margin:15px 0;">
+    {% elif outcome == "draw" %}
+        <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZWV0dWc4cnJoc3kxNWw2cXk1aWk5NWw4NDNhNHpiZzZ0aW54MDZoYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l3vRc2Z3Mz0ObjK80/giphy.gif" alt="Draw!" style="width:300px; border-radius:12px; margin:15px 0;">
     {% endif %}
+    <h2>{{ result }}</h2>
+    <form method="post">
+        <button type="submit" name="restart">Play Again</button>
+    </form>
+{% else %}
+    <form method="post">
+        <button type="submit" name="hit">Hit</button>
+        <button type="submit" name="stand">Stand</button>
+    </form>
+{% endif %}
 
 
     <button id="how-btn" class="how-btn">How It Works?</button>
