@@ -9,21 +9,25 @@ Built with **Python, Flask, HTML, CSS, Bootstrap**, and deployed on **AWS** with
 
 ## 🔄 v2 – Infrastructure Migration (May 2026)
 
-After running the original architecture for several months, I identified significant cost inefficiencies and performed a full infrastructure migration. This section documents what changed, why, and how.
+After running the original architecture for several months, I identified significant cost inefficiencies and performed a full infrastructure migration.
 
-### Why I Migrated
+### Design Philosophy: v1 vs v2
 
-| Problem | Impact |
-|---------|--------|
-| RDS MySQL (us-east-1) | ~€25/month idle cost |
-| ALB with 3 Elastic IPs | ~€18/month unnecessary charge |
-| ACM cert tied to ALB | No direct EC2 HTTPS without ALB |
-| Custom VPC (CloudFormation) | Maintenance overhead for single-instance app |
-| Region: us-east-1 | Higher latency for European visitors |
+**v1** was intentionally over-engineered to showcase security and scalability:
+- EC2 in private subnet — no direct public access
+- RDS in private subnet — only reachable from EC2 via internal VPC routing
+- All public traffic routed exclusively through the ALB
+- ALB handled SSL termination via ACM — HTTPS without touching the EC2
+- Multi-AZ Auto Scaling Group for high availability
 
-**Total before: ~€51/month → After: ~€8.50/month (83% cost reduction)**
+**v2** prioritises cost efficiency over redundancy:
+- Single public EC2 instance — acceptable for a low-traffic portfolio site
+- SQLite on EC2 — eliminates RDS entirely
+- Direct Route53 → EC2 routing — no ALB needed
+- Without ALB, SSL termination moves to the EC2 itself via Let's Encrypt + Nginx
 
----
+Both are valid production approaches depending on the use case.
+The right architecture is the one that fits the requirements — not the most complex one.
 
 ### What Changed
 
