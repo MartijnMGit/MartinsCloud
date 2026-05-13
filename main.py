@@ -11,7 +11,8 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import relationship
 import boto3
-#Blackjack game
+
+# Blackjack game
 from blackjack import deal_card, adjust_for_ace, compare_scores
 from art import logo
 
@@ -19,56 +20,26 @@ from art import logo
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 
 
-# --- Config ---
-region = "us-east-1"                # your AWS region
-db_user = "admin"                   # your RDS master username
-db_name = "martinscloud"         # your RDS DB name
-rds_host = "martinscloud-db.cul486skoeso.us-east-1.rds.amazonaws.com"
-port = 3306                         # MySQL default port
-
-# --- Function to generate fresh IAM auth token ---
-def get_iam_token():
-    session = boto3.Session()
-    client = session.client("rds", region_name=region)
-    token = client.generate_db_auth_token(
-        DBHostname=rds_host, Port=port, DBUsername=db_user
-    )
-    return token
-
-# --- Build SQLAlchemy Database URI ---
-def get_db_uri():
-    token = get_iam_token()
-    return f"mysql+pymysql://{db_user}:{token}@{rds_host}:{port}/{db_name}"
-# --- get secret key from parameter store ---
+# --- Get secret key from SSM Parameter Store ---
 def get_secret_key():
-    ssm = boto3.client('ssm', region_name='us-east-1')
+    ssm = boto3.client('ssm', region_name='eu-west-3')
     response = ssm.get_parameter(Name='/SECRET_KEY', WithDecryption=True)
     return response['Parameter']['Value']
 
+
 # --- Flask App Config ---
 app = Flask(__name__)
-login_manager = LoginManager()
-login_manager.init_app(app)
-# --- BlackJack Game ---
 app.secret_key = get_secret_key()
 
-# Instead of static URI, give SQLAlchemy a placeholder
-app.config['SQLALCHEMY_DATABASE_URI'] = (
-    f"mysql+pymysql://{db_user}@{rds_host}:{port}/{db_name}"
-)
-
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    "connect_args": {
-        "ssl": {"ca": "/home/ec2-user/rds-combined-ca-bundle.pem"}
-    }
-}
-
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 ckeditor = CKEditor(app)
-# Initialize Bootstrap-Flask
 bootstrap = Bootstrap(app)
-# For adding profile images to the comment section
+login_manager = LoginManager()
+login_manager.init_app(app)
+
 gravatar = Gravatar(app,
                     size=100,
                     rating='g',
@@ -79,56 +50,36 @@ gravatar = Gravatar(app,
                     base_url=None)
 
 
-# --- Ensure SQLAlchemy regenerates token before reconnect ---
-from sqlalchemy import event
-
-with app.app_context():
-    @event.listens_for(db.engine, "do_connect")
-    def provide_token(dialect, conn_rec, cargs, cparams):
-        cparams["password"] = get_iam_token()
-
-
 # CONFIGURE TABLES
 class BlogPost(db.Model):
     __tablename__ = "blog_posts"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    # Create Foreign Key, "users.id" the users refers to the tablename of User.
     author_id: Mapped[int] = mapped_column(Integer, db.ForeignKey("users.id"))
-    # Create reference to the User object. The "posts" refers to the posts property in the User class.
     author = relationship("User", back_populates="posts")
     title: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     subtitle: Mapped[str] = mapped_column(String(250), nullable=False)
     date: Mapped[str] = mapped_column(String(250), nullable=False)
     body: Mapped[str] = mapped_column(Text, nullable=False)
     img_url: Mapped[str] = mapped_column(String(250), nullable=False)
-    # Parent relationship to the comments
     comments = relationship("Comment", back_populates="parent_post")
 
 
-# Create a User table for all your registered users
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     email: Mapped[str] = mapped_column(String(100), unique=True)
-    password: Mapped[str] = mapped_column(String(100))
+    password: Mapped[str] = mapped_column(String(256))  # Fixed: hashed passwords need more space
     name: Mapped[str] = mapped_column(String(100))
-    # This will act like a list of BlogPost objects attached to each User.
-    # The "author" refers to the author property in the BlogPost class.
     posts = relationship("BlogPost", back_populates="author")
-    # Parent relationship: "comment_author" refers to the comment_author property in the Comment class.
     comments = relationship("Comment", back_populates="comment_author")
 
 
-# Create a table for the comments on the blog posts
 class Comment(db.Model):
     __tablename__ = "comments"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     text: Mapped[str] = mapped_column(Text, nullable=False)
-    # Child relationship:"users.id" The users refers to the tablename of the User class.
-    # "comments" refers to the comments property in the User class.
     author_id: Mapped[int] = mapped_column(Integer, db.ForeignKey("users.id"))
     comment_author = relationship("User", back_populates="comments")
-    # Child Relationship to the BlogPosts
     post_id: Mapped[str] = mapped_column(Integer, db.ForeignKey("blog_posts.id"))
     parent_post = relationship("BlogPost", back_populates="comments")
 
@@ -136,36 +87,30 @@ class Comment(db.Model):
 with app.app_context():
     db.create_all()
 
+
 @login_manager.user_loader
 def load_user(user_id):
     return db.get_or_404(User, user_id)
 
-# Create an admin-only decorator
+
 def admin_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # If id is not 1 then return abort with 403 error
-        if current_user.id != 1:
+        if not current_user.is_authenticated or current_user.id != 1:
             return abort(403)
-        # Otherwise continue with the route function
         return f(*args, **kwargs)
-
     return decorated_function
 
-# Register new users into the User database
+
 @app.route('/register', methods=["GET", "POST"])
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-
-        # Check if user email is already present in the database.
         result = db.session.execute(db.select(User).where(User.email == form.email.data))
         user = result.scalar()
         if user:
-            # User already exists
             flash("You've already signed up with that email, log in instead!")
             return redirect(url_for('login'))
-
         hash_and_salted_password = generate_password_hash(
             form.password.data,
             method='pbkdf2:sha256',
@@ -178,7 +123,6 @@ def register():
         )
         db.session.add(new_user)
         db.session.commit()
-        # This line will authenticate the user with Flask-Login
         login_user(new_user)
         return redirect(url_for("get_all_posts"))
     return render_template("register.html", form=form, current_user=current_user)
@@ -190,20 +134,16 @@ def login():
     if form.validate_on_submit():
         password = form.password.data
         result = db.session.execute(db.select(User).where(User.email == form.email.data))
-        # Note, email in db is unique so will only have one result.
         user = result.scalar()
-        # Email doesn't exist
         if not user:
             flash("That email does not exist, please try again.")
             return redirect(url_for('login'))
-        # Password incorrect
         elif not check_password_hash(user.password, password):
             flash('Password incorrect, please try again.')
             return redirect(url_for('login'))
         else:
             login_user(user)
             return redirect(url_for('get_all_posts'))
-
     return render_template("login.html", form=form, current_user=current_user)
 
 
@@ -211,6 +151,7 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('get_all_posts'))
+
 
 @app.route('/')
 def home():
@@ -224,18 +165,14 @@ def get_all_posts():
     return render_template("blog.html", all_posts=posts, current_user=current_user)
 
 
-# Add a POST method to be able to post comments
 @app.route("/post/<int:post_id>", methods=["GET", "POST"])
 def show_post(post_id):
     requested_post = db.get_or_404(BlogPost, post_id)
-    # Add the CommentForm to the route
     comment_form = CommentForm()
-    # Only allow logged-in users to comment on posts
     if comment_form.validate_on_submit():
         if not current_user.is_authenticated:
             flash("You need to login or register to comment.")
             return redirect(url_for("login"))
-
         new_comment = Comment(
             text=comment_form.comment_text.data,
             comment_author=current_user,
@@ -246,7 +183,6 @@ def show_post(post_id):
     return render_template("post.html", post=requested_post, current_user=current_user, form=comment_form)
 
 
-# Use a decorator so only an admin user can create new posts
 @app.route("/new-post", methods=["GET", "POST"])
 @admin_only
 def add_new_post():
@@ -266,7 +202,6 @@ def add_new_post():
     return render_template("make-post.html", form=form, current_user=current_user)
 
 
-# Use a decorator so only an admin user can edit a post
 @app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
 def edit_post(post_id):
     post = db.get_or_404(BlogPost, post_id)
@@ -288,7 +223,6 @@ def edit_post(post_id):
     return render_template("make-post.html", form=edit_form, is_edit=True, current_user=current_user)
 
 
-# Use a decorator so only an admin user can delete a post
 @app.route("/delete/<int:post_id>")
 @admin_only
 def delete_post(post_id):
@@ -307,7 +241,6 @@ def about():
 @app.route("/blackjack", methods=["GET", "POST"])
 def blackjack():
     if "player_cards" not in session:
-        # Start new game
         session["player_cards"] = [deal_card(), deal_card()]
         session["pc_cards"] = [deal_card(), deal_card()]
         session["game_over"] = False
@@ -326,12 +259,10 @@ def blackjack():
                 session["game_over"] = True
                 session["result"], session["outcome"] = compare_scores(sum(player_cards), sum(pc_cards))
         elif "stand" in request.form:
-            # Computer plays
             pc_cards = adjust_for_ace(pc_cards)
             while sum(pc_cards) < 17:
                 pc_cards.append(deal_card())
                 pc_cards = adjust_for_ace(pc_cards)
-
             session["game_over"] = True
             session["pc_cards"] = pc_cards
             session["result"], session["outcome"] = compare_scores(sum(player_cards), sum(pc_cards))
@@ -349,5 +280,6 @@ def blackjack():
                            outcome=session.get("outcome", ""),
                            game_over=session["game_over"])
 
+
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5001)
+    app.run(debug=False, host="0.0.0.0", port=5001)
