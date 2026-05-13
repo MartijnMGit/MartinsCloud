@@ -1,25 +1,146 @@
 # MartinsCloud Website
 
 **Personal Website & Portfolio Project**  
-Built with **Python, Flask, HTML, CSS, Bootstrap**, and deployed on **AWS** with a fully automated, scalable, and secure architecture. All infrastructure was provisioned via **CloudFormation YAML scripts**, giving me full control over the environment.
+Built with **Python, Flask, HTML, CSS, Bootstrap**, and deployed on **AWS** with a fully automated, secure, and cost-optimised architecture.
 
-![MartinsCloud Logo](./static/assets/img/home-bg.png)
+🌐 **Live:** https://www.martinscloud.be
+
 ---
 
-## 🌐 Live Demo
-[https://www.martinscloud.be](https://www.martinscloud.be)
+## 🔄 v2 – Infrastructure Migration (May 2026)
+
+After running the original architecture for several months, I identified significant cost inefficiencies and performed a full infrastructure migration.
+
+### Design Philosophy: v1 vs v2
+
+**v1** was intentionally over-engineered to showcase security and scalability:
+- EC2 in private subnet — no direct public access
+- RDS in private subnet — only reachable from EC2 via internal VPC routing
+- All public traffic routed exclusively through the ALB
+- ALB handled SSL termination via ACM — HTTPS without touching the EC2
+- Multi-AZ Auto Scaling Group for high availability
+
+**v2** prioritises cost efficiency over redundancy:
+- Single public EC2 instance — acceptable for a low-traffic portfolio site
+- SQLite on EC2 — eliminates RDS entirely
+- Direct Route53 → EC2 routing — no ALB needed
+- Without ALB, SSL termination moves to the EC2 itself via Let's Encrypt + Nginx
+
+Both are valid production approaches depending on the use case.
+The right architecture is the one that fits the requirements — not the most complex one.
+
+### What Changed
+
+#### 1. Region Migration: us-east-1 → eu-west-3 (Paris)
+- Created an AMI snapshot of the existing EC2 instance
+- Copied the AMI cross-region to eu-west-3 via AWS Console
+- Launched new EC2 instance from the copied AMI in Paris
+- Allocated new Elastic IP in eu-west-3 and attached it
+- Updated Route53 A records to point to the new Elastic IP
+- **Result:** Lower latency for European users, GDPR-friendly region
+
+#### 2. Database Migration: RDS MySQL → SQLite
+- Exported all blog data from RDS MySQL
+- Imported data into SQLite on the new EC2 instance
+- Removed all RDS-specific code: IAM token generation, SSL cert config, PyMySQL driver
+- SQLAlchemy's `db.create_all()` automatically creates the schema on first run
+
+```python
+# Before
+app.config['SQLALCHEMY_DATABASE_URI'] = get_db_uri()  # RDS MySQL + IAM auth
+
+# After
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
+```
+
+#### 3. Secrets: SSM Parameter Store (kept & updated)
+- Kept AWS SSM Parameter Store for secret key — no secrets in code or on disk
+- Recreated `/SECRET_KEY` parameter in eu-west-3
+- EC2 IAM role updated with `AmazonSSMReadOnlyAccess`
+
+```python
+def get_secret_key():
+    ssm = boto3.client('ssm', region_name='eu-west-3')
+    response = ssm.get_parameter(Name='/SECRET_KEY', WithDecryption=True)
+    return response['Parameter']['Value']
+```
+
+#### 4. Removed ALB + ASG
+- Replaced ALB/ASG with direct Route53 → EC2 routing
+- Single t3.micro is sufficient for portfolio traffic
+- Eliminated the largest recurring hourly charges
+
+#### 5. Removed Custom VPC
+- Migrated to default VPC in eu-west-3
+- Deleted CloudFormation stack, cleaning up all custom VPC resources automatically
+
+#### 6. HTTPS: ACM → Let's Encrypt (Certbot)
+- ACM certificates only work with ALB/CloudFront, not directly on EC2
+- Replaced with free Let's Encrypt certificate via Certbot
+- Auto-renews every 90 days via systemd timer
+
+```bash
+sudo certbot --nginx -d martinscloud.be -d www.martinscloud.be
+sudo systemctl enable certbot-renew.timer
+```
+
+---
+
+### v2 Architecture
+
+```
+User
+ │
+ ▼
+Route53 (A record) → Elastic IP
+ │
+ ▼
+EC2 t3.micro (eu-west-3, Paris)
+ ├── Nginx (reverse proxy + SSL via Let's Encrypt)
+ ├── Gunicorn (4 workers, systemd service — auto-starts on reboot)
+ ├── Flask app (Python 3.9)
+ │    ├── SQLite (blog.db)
+ │    └── boto3 → SSM Parameter Store (secret key)
+ └── IAM Role → SSM read access
+```
+
+### v2 Security Group
+
+| Port | Source | Purpose |
+|------|--------|---------|
+| 80 | 0.0.0.0/0 | Let's Encrypt verification + HTTP redirect |
+| 443 | 0.0.0.0/0 | HTTPS traffic |
+| 22 | My IP only | SSH admin access |
+
+### v2 Cost Comparison
+
+| Component | v1 (Before) | v2 (After) |
+|-----------|-------------|------------|
+| RDS MySQL | ~€25/month | €0 (SQLite) |
+| ALB | ~€18/month | €0 (removed) |
+| ACM | €0 | €0 (Let's Encrypt) |
+| EC2 t3.micro | ~€8/month | ~€8/month |
+| Route53 | ~€0.50/month | ~€0.50/month |
+| **Total** | **~€51/month** | **~€8.50/month** |
 
 ---
 
 ## 🔧 Technologies & Tools
 
-- **Frontend:** HTML, CSS, Bootstrap, JavaScript  
-- **Backend:** Python, Flask, Flask-Login, Flask-CKEditor  
-- **Database:** MySQL (Amazon RDS) with IAM authentication  
-- **Infrastructure / DevOps:** AWS CloudFormation, EC2, RDS, VPC, Subnets, Security Groups, Route 53, ACM, Auto Scaling, ALB  
-- **Server & Deployment:** Gunicorn, Nginx, systemd, HTTPS  
-- **Design Tools:** Canva, Paint, ChatGPT  
-- **Version Control:** Git, GitHub  
+**v1 (Original):**
+- **Frontend:** HTML, CSS, Bootstrap, JavaScript
+- **Backend:** Python, Flask, Flask-Login, Flask-CKEditor
+- **Database:** MySQL (Amazon RDS) with IAM authentication
+- **Infrastructure:** AWS CloudFormation, EC2, RDS, VPC, Subnets, Security Groups, Route53, ACM, Auto Scaling, ALB
+- **Server:** Gunicorn, Nginx, systemd, HTTPS
+- **Version Control:** Git, GitHub
+
+**v2 (Current):**
+- All of the above except RDS, ALB, ASG, ACM, and custom VPC
+- **Database:** SQLite (via SQLAlchemy)
+- **SSL:** Let's Encrypt (Certbot)
+- **Region:** eu-west-3 (Paris)
+- **Networking:** Default VPC
 
 ---
 
@@ -27,233 +148,106 @@ Built with **Python, Flask, HTML, CSS, Bootstrap**, and deployed on **AWS** with
 
 **MartinsCloud** is my personal portfolio website showcasing my cloud engineering and software development projects. This project demonstrates:
 
-- **Full-stack web development** with Flask and Bootstrap  
-- **Custom graphics and logos** created by myself  
-- **Database integration** with Amazon RDS and secure IAM authentication  
-- **Scalable and resilient AWS architecture** spanning multiple availability zones  
-- **Automated infrastructure deployment** with CloudFormation YAML scripts  
+- **Full-stack web development** with Flask and Bootstrap
+- **Custom graphics and logos** created by myself
+- **Database integration** — first with Amazon RDS + IAM auth, later migrated to SQLite for cost efficiency
+- **Production-grade AWS infrastructure** — including a full migration between regions and architectures
+- **Automated infrastructure deployment** with CloudFormation YAML scripts (v1)
+- **Cost optimisation** — reduced monthly AWS spend by 83% without sacrificing functionality
 
-**Advanced Deployment Note:**  
-Unlike the previous Blackjack project where I relied on **Elastic Beanstalk**, this project was deployed entirely on a **self-configured VPC** with **private and public subnets, route tables, IGW**. All resources were provisioned and version-controlled using **CloudFormation**, demonstrating end-to-end AWS expertise, scaling, and security without relying on managed deployment tools.  
+**Advanced Deployment Note (v1):**  
+Unlike the previous Blackjack project where I relied on **Elastic Beanstalk**, the original deployment used a **self-configured VPC** with private and public subnets, route tables, and IGW. All resources were provisioned and version-controlled using **CloudFormation**, demonstrating end-to-end AWS expertise without relying on managed deployment tools.
 
 ---
 
 ## 🛠 Features
 
-- Interactive blog platform with authentication, CRUD posts, and comments  
+- Interactive blog platform with authentication, CRUD posts, and comments
 - Responsive layout with emphasis on desktop usability
-- Fully integrated **MySQL RDS database** replacing local SQLite  
-- Scalable and resilient deployment with **Auto Scaling & ALB**  
-- Multi-app routing: MartinsCloud homepage and Blackjack app on the same ALB  
-- Secure traffic via **HTTPS with automatic redirection from HTTP**  
+- Role-based access control (admin-only post management)
+- Gravatar integration for user profile images
+- Rich text editor via Flask-CKEditor
+- Playable Blackjack game with session-based game state
+- Secure traffic via HTTPS with automatic HTTP → HTTPS redirection
 
 ---
 
 ## 💻 Local Development Setup
 
-The project uses **AWS RDS with IAM authentication** in production. To run locally, you have two options:
-
-
-### Option 1: Connect to RDS
-- Configure AWS CLI credentials:
-```bash
-aws configure
-```
-- Ensure your IP is allowed in the RDS security group
-- Install RDS SSL certificate bundle locally
-- Run the Flask app:
-
-```bash
-python main.py
-```
-### Option 2: Run Locally with SQLite (for testing)
-- Set environment variable:
-```bash
-export FLASK_ENV=development
-```
-- Modify main.py:
-```bash
-if os.environ.get("FLASK_ENV") == "development":
-    app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///local.db"
-```
-- Run Flask locally:
-```bash
-flask run
-```
-⚠️ Note: Some RDS-specific features like IAM authentication will not work in local SQLite mode.  
-
----
-
-## Installation 
-1. Clone the repository
 ```bash
 git clone https://github.com/MartijnMGit/MartinsCloud.git
 cd MartinsCloud
-```
-2. Create a virtual environment
-```bash
 python3 -m venv venv
 source venv/bin/activate  # Linux/Mac
 venv\Scripts\activate     # Windows
-```
-3. Install requirements
-```bash
 pip install -r requirements.txt
-```
-4. Run the Flask app
-```bash
 python main.py
 ```
-- In development mode, visit: http://127.0.0.1:5001/
-- In production (RDS/EC2), the app runs on the configured public IP or domain.
 
----
+Visit: http://127.0.0.1:5001/
 
-## 🛠️ Tech Stack
-
-- Frontend: HTML5, Bootstrap 5, CSS, CKEditor
-- Backend: Python 3, Flask, SQLAlchemy, Flask-Login, Flask-Gravatar
-- Database: AWS RDS MySQL with IAM authentication
-- Cloud & DevOps: EC2, VPC, ALB, Auto Scaling, Route 53, ACM SSL, CloudFormation
-- Version Control: Git & GitHub
+> Note: SSM Parameter Store is used for the secret key in production. For local development, you can temporarily replace `app.secret_key = get_secret_key()` with a static string.
 
 ---
 
 ## ✨ Highlights & Challenges
 
-- **Fully manual VPC setup** with private/public subnets, route tables, IGW, and security groups  
-- **AWS IAM authentication** for RDS instead of traditional username/password  
-- **Running Flask app in production** with Gunicorn + systemd and Nginx  
-- **Multi-AZ scalable architecture** with ALB and ASG  
-- **Custom AMI + Launch Template with user data** to automatically pull the latest code and restart the Flask app during Auto Scaling events  
-- **Redeployed Blackjack project** on the same self-configured VPC to reuse the ALB  
-- Hands-on **CloudFormation YAML scripting** for reproducible infrastructure  
+**v1:**
+- Fully manual VPC setup with private/public subnets, route tables, IGW, and security groups
+- AWS IAM authentication for RDS instead of traditional username/password
+- Multi-AZ scalable architecture with ALB and ASG
+- Custom AMI + Launch Template with user data to automatically pull latest code on scale-out events
+- Hands-on CloudFormation YAML scripting for reproducible infrastructure
+- Merged Blackjack app into main Flask project, reusing existing ALB
 
-💡 Previous projects used Elastic Beanstalk for deployment. This project intentionally avoids it, proving mastery of full AWS architecture and automation.
-
----
-
-## 🔀 Multi-App Integration & AWS Optimization (Blackjack Game)
-
-**Objective:** Merge projects, reduce AWS costs, and simplify deployment architecture.
-
-**Key Steps & Decisions:**
-
-- **Merged Blackjack Game into Main Flask Project**  
-  Consolidated two separate Flask apps into a single project to reduce EC2 usage and simplify architecture.  
-
-- **Secrets Management**  
-  Replaced hard-coded Flask secret key with **AWS SSM Parameter Store**, ensuring secure secret retrieval via EC2 IAM roles.  
-
-- **ALB & Traffic Routing**  
-  Originally, the Blackjack app used a **Beanstalk-created ALB**, which also handled routing for the main project.  
-  To safely delete the Beanstalk environment:  
-  1. Created a **new ALB** manually and attached the **existing ACM certificates** for HTTPS  
-  2. Configured an **HTTP listener** to automatically redirect traffic to HTTPS  
-  3. Updated **Route 53** to point at the new ALB  
-  4. All application routing, including `/blackjack`, is now handled **inside the Flask app**; no need for separate ALB target groups per app  
-  5. Once traffic flowed through the new ALB, the Beanstalk environment (and its ALB) could be safely deleted  
-
-- **Deployment Workflow & Automation**  
-  All EC2 instances launched by the Auto Scaling Group automatically pull the latest code from GitHub and restart the Flask app using Gunicorn/systemd. This is handled by the **user-data   script in the Launch Template**, ensuring the application stays up-to-date across all scaled instances without any manual intervention.
-
-- **IAM & Permissions**  
-  Configured EC2 instance role (`EC2AccesRDSRole`) to securely retrieve secrets from SSM.  
-
-**Outcome / Skills Demonstrated:**  
-- AWS Free Tier optimization (EC2, ALB, ASG)  
-- Infrastructure simplification & cost reduction  
-- Secure secret management with SSM & IAM roles  
-- Load balancing and traffic migration between ALBs  
-- ACM certificate integration and HTTP → HTTPS redirection  
-- Application-level routing with Flask for multi-app support  
-- Elastic Beanstalk cleanup and independent infrastructure management  
-- Multi-app Flask deployment and integration
+**v2 (Migration):**
+- Cross-region AMI copy and instance migration with zero data loss
+- RDS → SQLite migration preserving all existing blog data
+- Replaced ACM (ALB-only) with Let's Encrypt directly on EC2
+- Configured Gunicorn as a systemd service for auto-restart on reboot
+- Reduced monthly AWS cost by 83% while keeping the site fully functional and secure
 
 ---
 
 ## 🔑 Key Takeaways
 
-This project showcases:
-
 - Full-stack web development with Flask and Python
-- Cloud infrastructure design and deployment on AWS
-- Security best practices: IAM, SSL, secure database access
-- Scalable, resilient architecture using multiple AZs
-- Multi-app integration and application-level routing for different endpoints
-- Load balancing and traffic management using ALB
-- ACM certificate integration and HTTPS redirection
-- Ability to take a project from local development → production in the cloud
-- Strong design sense with custom graphics and UI polish
-- AWS Free Tier cost optimization and infrastructure simplification
+- Cloud infrastructure design, deployment, and migration on AWS
+- Security best practices: IAM roles, SSL/TLS, SSH restricted to known IPs, secrets via SSM
+- Cost awareness — knowing when managed services add value vs. when they add unnecessary spend
+- Scalable architecture (v1) and lean single-instance production setup (v2)
+- Multi-app integration and application-level routing
+- Ability to take a project from local development → production → optimised production
 
 ---
 
 ## 📸 Screenshots
 
-### 1. Homepage / About Me
-Showcasing custom headers with picture.
+### Homepage / About Me
+![Homepage Screenshot](static/assets/screenshots/Homepage.png)
+![About Me Screenshot](static/assets/screenshots/About-Me.png)
+![About Me Screenshot](static/assets/screenshots/About-Me2.png)
 
-![Homepage Screenshot](./static/assets/screenshots/Homepage.png)
----
-![About Me Screenshot](./static/assets/screenshots/About-Me.png)
----
-![About Me Screenshot](./static/assets/screenshots/About-Me2.png)
+### Blog Page
+![Blog Page Screenshot](static/assets/screenshots/Blog.png)
 
-### 2. Blog Page
-Listing posts with titles, subtitles, and images.
+### Single Post with Comments
+![Post Header Screenshot](static/assets/screenshots/Blog-post-header.png)
+![Post with Comments Screenshot](static/assets/screenshots/Blog-Comments.png)
 
-![Blog Page Screenshot](./static/assets/screenshots/Blog.png)
+### Register and Log In
+![Register Screen Screenshot](static/assets/screenshots/Register.png)
+![Log In Screen Screenshot](static/assets/screenshots/Log-In.png)
 
-### 3. Single Post with Comments
-Demonstrates comment section and Gravatar integration.
+### Admin Features
+![Admin Features Screenshot](static/assets/screenshots/Create-Blog1.png)
+![Admin Features Screenshot](static/assets/screenshots/Create-Blog2.png)
 
-![Post Header Screenshot](./static/assets/screenshots/Blog-post-header.png)
----
-![Post with Comments Screenshot](./static/assets/screenshots/Blog-Comments.png)
-
-### 4. Register and Log In
-Register screen
-
-![Register Screen Screenshot](./static/assets/screenshots/Register.png)
-
-Log In screen
-
-![Log In Screen Screenshot](./static/assets/screenshots/Log-In.png)
-
-### 4. Admin Features
-Create Post form  
-
-![Admin Features Screenshot](./static/assets/screenshots/Create-Blog1.png)
----
-![Admin Features Screenshot](./static/assets/screenshots/Create-Blog2.png)
-
-### 5. Cloud / Deployment Evidence
-
-- VPC Infrastructure Diagram
-  
-![Cloud Infrastructure Screenshot](./static/assets/screenshots/MartinsCloud-VPC.png)
----
-- VPC Infrastructure Diagram
-  
-![Cloud Infrastructure Screenshot](./static/assets/screenshots/VPC-Infrastructure-CFN.png)
----
-- EC2 instance running the Flask app
-  
-![Cloud EC2 Screenshot](./static/assets/screenshots/EC2-Running-App.png)
----
-- RDS dashboard
-  
-![Cloud RDS Dashboard Screenshot](./static/assets/screenshots/RDS-dashboard.png)
----
-- RDS IAM authentication
-  
-![Cloud RDS IAM DB Authentication Screenshot](./static/assets/screenshots/RDS-IAM-AUTH.png)
----
-- ALB routing rules
-  
-![Cloud ALB Routing Rules Screenshot](./static/assets/screenshots/ALB-Rules.png)
----
-- ALB HTTPS setup
-  
-![Cloud ALB HTTPS Setup Screenshot](./static/assets/screenshots/ALB-HTTPS.png)
+### Cloud / Deployment Evidence (v1)
+![VPC Infrastructure Diagram](static/assets/screenshots/MartinsCloud-VPC.png)
+![VPC Infrastructure CFN](static/assets/screenshots/VPC-Infrastructure-CFN.png)
+![EC2 Running App](static/assets/screenshots/EC2-Running-App.png)
+![RDS Dashboard](static/assets/screenshots/RDS-dashboard.png)
+![RDS IAM Authentication](static/assets/screenshots/RDS-IAM-AUTH.png)
+![ALB Routing Rules](static/assets/screenshots/ALB-Rules.png)
+![ALB HTTPS Setup](static/assets/screenshots/ALB-HTTPS.png)
