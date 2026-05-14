@@ -153,7 +153,7 @@ EC2 t3.micro (eu-west-3, Paris)
 | ACM | €0 | €0 (Let's Encrypt) |
 | EC2 t3.micro | ~€8/month | ~€8/month |
 | Route53 | ~€0.50/month | ~€0.50/month |
-| S3 bucket | €0.50/month (us-east-1) | ~€0.50/month (eu-west-3) |
+| S3 bucket | ~€0.50/month (us-east-1) | ~€0.50/month (eu-west-3) |
 | **Total** | **~€51.50/month** | **~€9.00/month** |
 
 ---
