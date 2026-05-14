@@ -84,6 +84,37 @@ sudo certbot --nginx -d martinscloud.be -d www.martinscloud.be
 sudo systemctl enable certbot-renew.timer
 ```
 
+#### 7. S3 Bucket Migration & Database Backups
+
+##### S3 Bucket Migration (us-east-1 → eu-west-3)
+- Moved S3 bucket from us-east-1 to eu-west-3 to keep all resources in the same region
+- Lower latency for European users serving static assets
+- Bucket `martinscloud-v2` hosts public blog images and private database backups in separate prefixes
+
+##### Automated SQLite Backups to S3
+- SQLite database backed up nightly to S3 via a cron job
+- EC2 IAM role granted `s3:PutObject` on `martinscloud-v2` bucket
+- Backups stored with date suffix for easy recovery: `backups/blog-YYYY-MM-DD.db`
+
+**Cron job (runs daily at 2am UTC):**
+```bash
+0 2 * * * aws s3 cp /home/ec2-user/MartinsCloud/instance/blog.db s3://martinscloud-v2/backups/blog-$(date +%F).db
+```
+
+**IAM policy attached to EC2 role:**
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": ["s3:PutObject"],
+            "Resource": "arn:aws:s3:::martinscloud-v2/*"
+        }
+    ]
+}
+```
+
 ---
 
 ### v2 Architecture
@@ -102,6 +133,7 @@ EC2 t3.micro (eu-west-3, Paris)
  │    ├── SQLite (blog.db)
  │    └── boto3 → SSM Parameter Store (secret key)
  └── IAM Role → SSM read access
+ └── S3 (martinscloud-v2) → public images + nightly DB backups
 ```
 
 ### v2 Security Group
@@ -121,7 +153,8 @@ EC2 t3.micro (eu-west-3, Paris)
 | ACM | €0 | €0 (Let's Encrypt) |
 | EC2 t3.micro | ~€8/month | ~€8/month |
 | Route53 | ~€0.50/month | ~€0.50/month |
-| **Total** | **~€51/month** | **~€8.50/month** |
+| S3 bucket | €0.50/month (us-east-1) | ~€0.50/month (eu-west-3) |
+| **Total** | **~€51.50/month** | **~€9.00/month** |
 
 ---
 
@@ -206,6 +239,9 @@ Visit: http://127.0.0.1:5001/
 - Replaced ACM (ALB-only) with Let's Encrypt directly on EC2
 - Configured Gunicorn as a systemd service for auto-restart on reboot
 - Reduced monthly AWS cost by 83% while keeping the site fully functional and secure
+- Migrated S3 bucket to eu-west-3 for regional consistency
+- Automated nightly SQLite backups to S3 with dated filenames via cron
+- IAM role scoped to PutObject only — least privilege principle
 
 ---
 
