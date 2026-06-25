@@ -19,25 +19,16 @@
 
 <!-- About -->
 <div class="container px-4 px-lg-5 my-5">
-  <div class="row gx-5 align-items-center">
-    <div class="col-md-3 text-center mb-3 mb-md-0">
+  <div class="row gx-5 align-items-center justify-content-center">
+    <div class="col-md-3 mb-4 mb-md-0">
       <img src="{{ url_for('static', filename='assets/img/headshot.png') }}"
-           class="rounded-circle shadow-sm"
+           class="img-fluid rounded shadow-sm"
            alt="Martijn Motmans"
-           style="width: 150px; height: 150px; object-fit: cover;">
+           style="max-width: 220px; object-fit: cover;">
     </div>
-    <div class="col-md-9">
-      <h4 class="fw-bold mb-1">Martijn Motmans</h4>
-      <p class="text-muted mb-3" style="font-size: 14px;">Cloud Engineer · AWS Certified · Python Developer</p>
-      <a href="{{ url_for('about') }}" class="btn btn-sm btn-outline-dark me-2">
-        <i class="fas fa-user me-1"></i> About Me
-      </a>
-      <a href="https://github.com/MartijnMGit" target="_blank" class="btn btn-sm btn-outline-dark me-2">
-        <i class="fab fa-github me-1"></i> GitHub
-      </a>
-      <a href="https://www.linkedin.com/in/martijn-motmans/" target="_blank" class="btn btn-sm btn-outline-dark">
-        <span style="background-color: #0a66c2; color: #fff; padding: 2px 5px; border-radius: 3px; font-weight: 700; font-size: 11px; margin-right: 5px;">in</span> LinkedIn
-      </a>
+    <div class="col-md-5">
+      <h3 class="fw-bold mb-1">Martijn Motmans</h3>
+      <p class="text-muted mb-0" style="font-size: 15px;">Cloud Engineer · AWS Certified · Python Developer</p>
     </div>
   </div>
 </div>
