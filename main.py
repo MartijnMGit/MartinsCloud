@@ -40,6 +40,8 @@ bootstrap = Bootstrap(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+dynamodb = boto3.client('dynamodb', region_name='eu-west-3')
+
 gravatar = Gravatar(app,
                     size=100,
                     rating='g',
@@ -151,6 +153,36 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('get_all_posts'))
+
+
+@app.before_request
+def count_visitor():
+    if not request.path.startswith('/static'):
+        try:
+            dynamodb.update_item(
+                TableName='WebsiteStats',
+                Key={'siteId': {'S': 'martinscloud.be'}},
+                UpdateExpression='ADD visitorCount :inc',
+                ExpressionAttributeValues={':inc': {'N': '1'}},
+            )
+        except Exception:
+            pass
+
+
+def get_visitor_count():
+    try:
+        response = dynamodb.get_item(
+            TableName='WebsiteStats',
+            Key={'siteId': {'S': 'martinscloud.be'}}
+        )
+        return int(response['Item']['visitorCount']['N'])
+    except Exception:
+        return 0
+
+
+@app.context_processor
+def inject_visitor_count():
+    return dict(visitor_count=get_visitor_count())
 
 
 @app.route('/')
