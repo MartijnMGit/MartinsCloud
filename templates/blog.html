@@ -56,12 +56,12 @@
 
       <!-- Account -->
       {% if not current_user.is_authenticated: %}
-      <div class="d-flex justify-content-end mb-4 gap-2">
+      <div class="d-flex justify-content-start mb-4 gap-2">
         <a class="btn btn-primary text-uppercase" href="{{ url_for('login') }}">Login</a>
         <a class="btn btn-outline-dark text-uppercase" href="{{ url_for('register') }}">Register</a>
       </div>
       {% else: %}
-      <div class="d-flex justify-content-end mb-4">
+      <div class="d-flex justify-content-start mb-4">
         <a class="btn btn-outline-dark text-uppercase" href="{{ url_for('logout') }}">Log Out</a>
       </div>
       {% endif %}
