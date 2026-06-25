@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timezone, timedelta
 from flask import Flask, abort, render_template, redirect, url_for, flash, request, session
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
@@ -157,16 +157,19 @@ def logout():
 
 @app.before_request
 def count_visitor():
-    if not request.path.startswith('/static'):
-        try:
+    if request.path.startswith('/static'):
+        return
+    today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+    try:
+        for key in ['martinscloud.be', f'martinscloud.be#{today}']:
             dynamodb.update_item(
                 TableName='WebsiteStats',
-                Key={'siteId': {'S': 'martinscloud.be'}},
+                Key={'siteId': {'S': key}},
                 UpdateExpression='ADD visitorCount :inc',
                 ExpressionAttributeValues={':inc': {'N': '1'}},
             )
-        except Exception:
-            pass
+    except Exception:
+        pass
 
 
 def get_visitor_count():
@@ -262,6 +265,25 @@ def delete_post(post_id):
     db.session.delete(post_to_delete)
     db.session.commit()
     return redirect(url_for('get_all_posts'))
+
+
+@app.route('/stats')
+def stats():
+    dates = [(datetime.now(timezone.utc) - timedelta(days=i)).strftime('%Y-%m-%d')
+             for i in range(29, -1, -1)]
+    keys = [{'siteId': {'S': f'martinscloud.be#{d}'}} for d in dates]
+    try:
+        response = dynamodb.batch_get_item(
+            RequestItems={'WebsiteStats': {'Keys': keys}}
+        )
+        items = response['Responses']['WebsiteStats']
+        counts = {item['siteId']['S'].split('#')[1]: int(item['visitorCount']['N'])
+                  for item in items}
+    except Exception:
+        counts = {}
+    data = [{'date': d, 'count': counts.get(d, 0)} for d in dates]
+    total = get_visitor_count()
+    return render_template('stats.html', data=data, total=total, current_user=current_user)
 
 
 @app.route("/about")
