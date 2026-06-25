@@ -270,7 +270,7 @@ def delete_post(post_id):
 @app.route('/stats')
 def stats():
     dates = [(datetime.now(timezone.utc) - timedelta(days=i)).strftime('%Y-%m-%d')
-             for i in range(6, -1, -1)]
+             for i in range(29, -1, -1)]
     keys = [{'siteId': {'S': f'martinscloud.be#{d}'}} for d in dates]
     try:
         response = dynamodb.batch_get_item(
