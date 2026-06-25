@@ -132,7 +132,8 @@ EC2 t3.micro (eu-west-3, Paris)
  ├── Flask app (Python 3.9)
  │    ├── SQLite (blog.db)
  │    └── boto3 → SSM Parameter Store (secret key)
- └── IAM Role → SSM read access
+ │    └── boto3 → DynamoDB (visitor counter)  
+ └── IAM Role → SSM + DynamoDB read/write access
  └── S3 (martinscloud-v2) → public images + nightly DB backups
 ```
 
@@ -156,6 +157,38 @@ EC2 t3.micro (eu-west-3, Paris)
 | S3 bucket | ~€0.50/month (us-east-1) | ~€0.50/month (eu-west-3) |
 | **Total** | **~€51.50/month** | **~€9.00/month** |
 
+---
+
+## 📊 Live Visitor Tracker (DynamoDB)
+
+Added a real-time visitor counter backed by AWS DynamoDB.
+
+**How it works:**
+- Flask `before_request` hook fires on every page visit (static files excluded)
+- Two DynamoDB items updated atomically per visit:
+  - `martinscloud.be` — running total
+  - `martinscloud.be#YYYY-MM-DD` — daily counter
+- `/stats` page displays a 30-day bar chart via Chart.js
+- Data fetched in a single `BatchGetItem` call
+
+**Technical decisions:**
+- Atomic counter via `UpdateItem` with `ADD` expression — no race conditions under concurrent traffic
+- Dual-key strategy in a single table — no sort key or extra table needed
+- IAM instance profile handles credentials — no hardcoded keys
+- Provisioned billing (1 RCU / 1 WCU) — stays within permanent free tier → **€0/month**
+
+**IAM permissions added to EC2 role:**
+```json
+{
+  "Effect": "Allow",
+  "Action": [
+    "dynamodb:UpdateItem",
+    "dynamodb:GetItem",
+    "dynamodb:BatchGetItem"
+  ],
+  "Resource": "arn:aws:dynamodb:eu-west-3:YOUR_ACCOUNT_ID:table/WebsiteStats"
+}
+```
 ---
 
 ## 🔧 Technologies & Tools
@@ -202,6 +235,7 @@ Unlike the previous Blackjack project where I relied on **Elastic Beanstalk**, t
 - Rich text editor via Flask-CKEditor
 - Playable Blackjack game with session-based game state
 - Secure traffic via HTTPS with automatic HTTP → HTTPS redirection
+- Live visitor counter with 30-day analytics chart powered by AWS DynamoDB
 
 ---
 
@@ -254,6 +288,7 @@ Visit: http://127.0.0.1:5001/
 - Scalable architecture (v1) and lean single-instance production setup (v2)
 - Multi-app integration and application-level routing
 - Ability to take a project from local development → production → optimised production
+- NoSQL data modelling — atomic counters, dual-key strategy, BatchGetItem optimisation
 
 ---
 
