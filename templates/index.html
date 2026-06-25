@@ -28,54 +28,16 @@
     </div>
     <div class="col-md-9">
       <h4 class="fw-bold mb-1">Martijn Motmans</h4>
-      <p class="text-muted mb-2" style="font-size: 14px;">Cloud Engineer · AWS Certified · Python Developer</p>
-      <p style="font-size: 15px;">
-        After several years as a nurse, I transitioned into cloud engineering — bringing attention to detail,
-        ownership, and the ability to stay calm under pressure. I build and deploy infrastructure on AWS,
-        with a focus on automation and reliability.
-      </p>
+      <p class="text-muted mb-3" style="font-size: 14px;">Cloud Engineer · AWS Certified · Python Developer</p>
       <a href="{{ url_for('about') }}" class="btn btn-sm btn-outline-dark me-2">
         <i class="fas fa-user me-1"></i> About Me
       </a>
       <a href="https://github.com/MartijnMGit" target="_blank" class="btn btn-sm btn-outline-dark me-2">
         <i class="fab fa-github me-1"></i> GitHub
       </a>
-      <a href="https://www.linkedin.com/in/martijn-motmans/" target="_blank" class="btn btn-sm btn-outline-dark">
+      <a href="https://www.linkedin.com/in/martijn-motmans/" target="_blank" class="btn btn-sm me-2" style="background-color: #0a66c2; color: #fff;">
         <i class="fab fa-linkedin-in me-1"></i> LinkedIn
       </a>
-    </div>
-  </div>
-</div>
-
-<!-- Certifications -->
-<div class="container px-4 px-lg-5 mb-5">
-  <div class="row gx-4 justify-content-center">
-    <div class="col-md-10">
-      <h5 class="fw-bold mb-3">Certifications</h5>
-      <div class="row g-3">
-        <div class="col-sm-6">
-          <a href="https://www.credly.com/badges/23588268-9884-4a14-8b30-c32b6f462e5d/embedded" target="_blank"
-             class="d-flex align-items-center p-3 bg-light rounded text-decoration-none" style="border: 1px solid #e9ecef;">
-            <img src="{{ url_for('static', filename='assets/img/Solutions-Architect-Associate.png') }}"
-                 alt="AWS SAA" style="width: 56px; height: 56px; object-fit: contain;" class="me-3">
-            <div>
-              <strong class="d-block text-dark" style="font-size: 14px;">Solutions Architect – Associate</strong>
-              <small class="text-muted">AWS · SAA-C03</small>
-            </div>
-          </a>
-        </div>
-        <div class="col-sm-6">
-          <a href="https://www.credly.com/badges/ddaf0d7e-d1ad-4373-b4c8-337097063d12/embedded" target="_blank"
-             class="d-flex align-items-center p-3 bg-light rounded text-decoration-none" style="border: 1px solid #e9ecef;">
-            <img src="{{ url_for('static', filename='assets/img/Cloud-Practitioner.png') }}"
-                 alt="AWS CCP" style="width: 56px; height: 56px; object-fit: contain;" class="me-3">
-            <div>
-              <strong class="d-block text-dark" style="font-size: 14px;">Cloud Practitioner – Foundational</strong>
-              <small class="text-muted">AWS · CLF-C02</small>
-            </div>
-          </a>
-        </div>
-      </div>
     </div>
   </div>
 </div>
@@ -86,41 +48,7 @@
 <div class="container px-4 px-lg-5 my-5">
   <h5 class="fw-bold mb-4">Projects</h5>
 
-  <!-- Project 1: Blog Platform -->
-  <div class="card mb-4 border-0 shadow-sm">
-    <div class="row g-0">
-      <div class="col-md-4">
-        <img src="{{ url_for('static', filename='assets/img/Blog-Thumbnail.png') }}"
-             class="img-fluid rounded-start h-100" style="object-fit: cover;" alt="Blog Platform">
-      </div>
-      <div class="col-md-8">
-        <div class="card-body">
-          <h5 class="card-title fw-bold">Interactive Blog Platform</h5>
-          <p class="mb-2"><span class="badge bg-success">Full production AWS deployment</span></p>
-          <p class="card-text" style="font-size: 14px;">
-            Full-stack Flask app with authentication, CRUD posts, comments, and AWS RDS —
-            deployed in a custom VPC on EC2 with Auto Scaling, ALB, and Route 53.
-          </p>
-          <p class="mb-3">
-            <span class="badge bg-light text-dark border">Flask</span>
-            <span class="badge bg-light text-dark border">Python</span>
-            <span class="badge bg-light text-dark border">CloudFormation</span>
-            <span class="badge bg-light text-dark border">EC2</span>
-            <span class="badge bg-light text-dark border">RDS</span>
-            <span class="badge bg-light text-dark border">ALB + ASG</span>
-          </p>
-          <a href="{{ url_for('get_all_posts') }}" class="btn btn-primary btn-sm me-2">
-            <i class="fas fa-external-link-alt me-1"></i> Live
-          </a>
-          <a href="https://github.com/MartijnMGit/MartinsCloud" target="_blank" class="btn btn-outline-dark btn-sm">
-            <i class="fab fa-github me-1"></i> GitHub
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Project 2: Cloud Migration -->
+  <!-- Project 1: Cloud Migration -->
   <div class="card mb-4 border-0 shadow-sm">
     <div class="row g-0">
       <div class="col-md-4">
@@ -130,19 +58,39 @@
       <div class="col-md-8">
         <div class="card-body">
           <h5 class="card-title fw-bold">Cloud Migration & Cost Optimisation</h5>
-          <p class="mb-2"><span class="badge bg-success">83% monthly cost reduction</span></p>
+          <p class="mb-2"><span class="badge" style="background-color: #0085A1;">83% monthly cost reduction</span></p>
           <p class="card-text" style="font-size: 14px;">
             Optimised the live production environment by migrating to Paris (eu-west-3), replacing RDS with
             SQLite and removing ALB/ASG — cutting costs with zero downtime.
           </p>
-          <p class="mb-3">
-            <span class="badge bg-light text-dark border">EC2</span>
-            <span class="badge bg-light text-dark border">Nginx</span>
-            <span class="badge bg-light text-dark border">Let's Encrypt</span>
-            <span class="badge bg-light text-dark border">SQLite</span>
-          </p>
           <a href="https://github.com/MartijnMGit/MartinsCloud#-v2--infrastructure-migration-may-2026" target="_blank" class="btn btn-outline-dark btn-sm">
-            <i class="fab fa-github me-1"></i> Write-up
+            <i class="fab fa-github me-1"></i> GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project 2: Blog Platform -->
+  <div class="card mb-4 border-0 shadow-sm">
+    <div class="row g-0">
+      <div class="col-md-4">
+        <img src="{{ url_for('static', filename='assets/img/Blog-Thumbnail.png') }}"
+             class="img-fluid rounded-start h-100" style="object-fit: cover;" alt="Blog Platform">
+      </div>
+      <div class="col-md-8">
+        <div class="card-body">
+          <h5 class="card-title fw-bold">Interactive Blog Platform</h5>
+          <p class="mb-2"><span class="badge" style="background-color: #0085A1;">Full production AWS deployment</span></p>
+          <p class="card-text" style="font-size: 14px;">
+            Full-stack Flask app with authentication, CRUD posts, comments, and AWS RDS —
+            deployed in a custom VPC on EC2 with Auto Scaling, ALB, and Route 53.
+          </p>
+          <a href="{{ url_for('get_all_posts') }}" class="btn btn-primary btn-sm me-2">
+            <i class="fas fa-external-link-alt me-1"></i> Live
+          </a>
+          <a href="https://github.com/MartijnMGit/MartinsCloud" target="_blank" class="btn btn-outline-dark btn-sm">
+            <i class="fab fa-github me-1"></i> GitHub
           </a>
         </div>
       </div>
@@ -159,16 +107,10 @@
       <div class="col-md-8">
         <div class="card-body">
           <h5 class="card-title fw-bold">Blackjack Game Web App</h5>
-          <p class="mb-2"><span class="badge bg-success">Terminal → Web → AWS pipeline</span></p>
+          <p class="mb-2"><span class="badge" style="background-color: #0085A1;">Terminal to Web to AWS pipeline</span></p>
           <p class="card-text" style="font-size: 14px;">
             Started as a Python terminal game, then transformed into a Flask web application
             with session-based game state and deployed securely on AWS.
-          </p>
-          <p class="mb-3">
-            <span class="badge bg-light text-dark border">Python</span>
-            <span class="badge bg-light text-dark border">Flask</span>
-            <span class="badge bg-light text-dark border">Sessions</span>
-            <span class="badge bg-light text-dark border">AWS</span>
           </p>
           <a href="{{ url_for('blackjack') }}" class="btn btn-primary btn-sm me-2">
             <i class="fas fa-external-link-alt me-1"></i> Play
