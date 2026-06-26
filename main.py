@@ -11,6 +11,7 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import relationship
 import boto3
+import requests as http_requests
 
 # Blackjack game
 from blackjack import deal_card, adjust_for_ace, compare_scores
@@ -41,6 +42,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 dynamodb = boto3.client('dynamodb', region_name='eu-west-3')
+ip_country_cache = {}
 
 gravatar = Gravatar(app,
                     size=100,
@@ -155,6 +157,18 @@ def logout():
     return redirect(url_for('get_all_posts'))
 
 
+def get_country_from_ip(ip):
+    if ip in ip_country_cache:
+        return ip_country_cache[ip]
+    try:
+        resp = http_requests.get(f'http://ip-api.com/json/{ip}?fields=country', timeout=2)
+        country = resp.json().get('country', 'Unknown')
+    except Exception:
+        country = 'Unknown'
+    ip_country_cache[ip] = country
+    return country
+
+
 @app.before_request
 def count_visitor():
     if request.path.startswith('/static'):
@@ -165,6 +179,17 @@ def count_visitor():
             dynamodb.update_item(
                 TableName='WebsiteStats',
                 Key={'siteId': {'S': key}},
+                UpdateExpression='ADD visitorCount :inc',
+                ExpressionAttributeValues={':inc': {'N': '1'}},
+            )
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr, type=str)
+        if ip:
+            ip = ip.split(',')[0].strip()
+        country = get_country_from_ip(ip)
+        if country and country != 'Unknown':
+            dynamodb.update_item(
+                TableName='WebsiteStats',
+                Key={'siteId': {'S': f'country#{country}'}},
                 UpdateExpression='ADD visitorCount :inc',
                 ExpressionAttributeValues={':inc': {'N': '1'}},
             )
@@ -283,7 +308,26 @@ def stats():
         counts = {}
     data = [{'date': d, 'count': counts.get(d, 0)} for d in dates]
     total = get_visitor_count()
-    return render_template('stats.html', data=data, total=total, current_user=current_user)
+    countries = get_country_stats()
+    return render_template('stats.html', data=data, total=total, countries=countries, current_user=current_user)
+
+
+def get_country_stats():
+    try:
+        response = dynamodb.scan(
+            TableName='WebsiteStats',
+            FilterExpression='begins_with(siteId, :prefix)',
+            ExpressionAttributeValues={':prefix': {'S': 'country#'}}
+        )
+        result = []
+        for item in response['Items']:
+            country = item['siteId']['S'].replace('country#', '')
+            count = int(item['visitorCount']['N'])
+            result.append({'country': country, 'count': count})
+        result.sort(key=lambda x: x['count'], reverse=True)
+        return result
+    except Exception:
+        return []
 
 
 @app.route("/about")

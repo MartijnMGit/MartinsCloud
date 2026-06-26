@@ -18,7 +18,37 @@
   <div class="row justify-content-center">
     <div class="col-md-10 col-lg-8">
       <p class="mb-4">Total page views: <strong>{{ total }}</strong></p>
+
+      <h5 class="fw-bold mb-3">Page views (last 30 days)</h5>
       <canvas id="visitorChart" height="100"></canvas>
+
+      {% if countries %}
+      <hr class="my-5">
+      <h5 class="fw-bold mb-3">Visitors by country</h5>
+      <div class="row">
+        <div class="col-md-6 mb-4">
+          <canvas id="countryChart" height="200"></canvas>
+        </div>
+        <div class="col-md-6">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Country</th>
+                <th class="text-end">Views</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in countries %}
+              <tr>
+                <td>{{ c.country }}</td>
+                <td class="text-end">{{ c.count }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
     </div>
   </div>
 </div>
@@ -46,6 +76,34 @@
       plugins: { legend: { display: false } }
     }
   });
+
+  {% if countries %}
+  const countryCtx = document.getElementById('countryChart').getContext('2d');
+  new Chart(countryCtx, {
+    type: 'doughnut',
+    data: {
+      labels: {{ countries | map(attribute='country') | list | tojson }},
+      datasets: [{
+        data: {{ countries | map(attribute='count') | list | tojson }},
+        backgroundColor: [
+          'rgba(0, 133, 161, 0.8)',
+          'rgba(54, 162, 235, 0.8)',
+          'rgba(75, 192, 192, 0.8)',
+          'rgba(153, 102, 255, 0.8)',
+          'rgba(255, 159, 64, 0.8)',
+          'rgba(255, 99, 132, 0.8)',
+          'rgba(201, 203, 207, 0.8)',
+          'rgba(255, 205, 86, 0.8)'
+        ]
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 12 } } }
+      }
+    }
+  });
+  {% endif %}
 </script>
 
 {% include "footer.html" %}
