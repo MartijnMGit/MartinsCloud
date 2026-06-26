@@ -177,6 +177,13 @@ Added a real-time visitor counter backed by AWS DynamoDB.
 - IAM instance profile handles credentials — no hardcoded keys
 - Provisioned billing (1 RCU / 1 WCU) — stays within permanent free tier → **€0/month**
 
+**Country Tracking (GDPR-conscious)**
+- IP address resolved to country via `ip-api.com` (free, 45 req/min)
+- In-memory IP cache prevents duplicate API calls — 300 visits ≠ 300 unique IPs
+- Only the country name is stored in DynamoDB, never the IP itself
+- Doughnut chart on `/stats` shows visitor distribution by country
+- Data builds from implementation date onwards
+
 **IAM permissions added to EC2 role:**
 ```json
 {
@@ -185,6 +192,7 @@ Added a real-time visitor counter backed by AWS DynamoDB.
     "dynamodb:UpdateItem",
     "dynamodb:GetItem",
     "dynamodb:BatchGetItem"
+    "dynamodb:Scan"
   ],
   "Resource": "arn:aws:dynamodb:eu-west-3:YOUR_ACCOUNT_ID:table/WebsiteStats"
 }
