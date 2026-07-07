@@ -40,6 +40,33 @@
 <div class="container px-4 px-lg-5 my-5">
   <h5 class="fw-bold mb-4">Projects</h5>
 
+  <!-- Project: Serverless Media Pipeline -->
+  <div class="card mb-4 border-0 shadow-sm">
+    <div class="row g-0">
+      <div class="col-md-4">
+        <img src="{{ url_for('static', filename='assets/screenshots/Media-Pipeline.png') }}"
+             class="img-fluid rounded-start w-100" style="object-fit: cover; max-height: 250px;" alt="Serverless Media Pipeline">
+      </div>
+      <div class="col-md-8">
+        <div class="card-body">
+          <h5 class="card-title fw-bold">Serverless Media Analysis Pipeline</h5>
+          <p class="mb-2"><span class="badge" style="background-color: #0085A1;">Lambda · Step Functions · Terraform · CI/CD</span></p>
+          <p class="card-text" style="font-size: 14px;">
+            Event-driven image pipeline: uploads trigger Step Functions running Lambda thumbnailing,
+            Rekognition moderation and labeling into DynamoDB. Deployed with Terraform through a
+            GitHub Actions pipeline using OIDC, with cost guardrails including a budget circuit breaker.
+          </p>
+          <a href="https://media.martinscloud.be" target="_blank" class="btn btn-primary btn-sm me-2">
+            <i class="fas fa-external-link-alt me-1"></i> Live
+          </a>
+          <a href="https://github.com/MartijnMGit/serverless-media-pipeline" target="_blank" class="btn btn-outline-dark btn-sm">
+            <i class="fab fa-github me-1"></i> GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Project 1: Cloud Migration -->
   <div class="card mb-4 border-0 shadow-sm">
     <div class="row g-0">
