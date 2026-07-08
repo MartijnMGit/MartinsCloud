@@ -22,24 +22,37 @@
     <div class="row gx-4 gx-lg-5 justify-content-center">
       <div class="col-md-10 col-lg-8 col-xl-7">
         <p>
-          After several years as a nurse, I made a deliberate transition into cloud engineering.
-          My background gave me a sharp eye for detail, a strong sense of ownership, and the ability
-          to stay calm under pressure.
+          After several years as a nurse, I made a deliberate switch to cloud engineering. Nursing taught me
+          to stay calm under pressure, take ownership, and never guess when you can verify. Those habits
+          transfer directly to running production infrastructure.
         </p>
         <p>
-          I design and deploy cloud infrastructure on AWS, with hands-on experience in EC2, S3, RDS, VPC, IAM, and
-          CloudFormation. I built and deployed a full-stack application in a production-like AWS environment,
-          implementing auto scaling, load balancing, and infrastructure as code from scratch.
+          Today I run two production systems on AWS. The first is this site: a Flask application on EC2 behind
+          Nginx, originally provisioned with CloudFormation in a custom VPC, later migrated across regions and
+          re-architected to cut its running cost by 83%. The second is fully serverless: an
+          <a href="https://media.martinscloud.be" target="_blank">image-analysis pipeline</a> built on Lambda,
+          Step Functions, Rekognition, and DynamoDB, defined entirely in Terraform and deployed through a
+          GitHub Actions pipeline that stores no AWS credentials.
         </p>
         <p>
-          My focus is on cloud infrastructure, automation, and building systems that are scalable and reliable.
-          I work with Python, Terraform, and CI/CD pipelines on GitHub Actions, and am expanding my
-          skills in containerization.
+          I hold three AWS certifications, but most of what I know comes from operating these systems for real:
+          debugging IAM policies, tuning costs, setting rate limits and budget circuit breakers, and documenting
+          what broke and why. I'm currently expanding my skills in Docker and containerization.
         </p>
         <p>
-          What makes me different is a background that taught me to manage complexity, take responsibility,
-          and think critically. These are skills that translate directly into building robust cloud solutions.
+          What makes me different is a background that taught me to manage complexity and take responsibility
+          when it matters. That translates directly into how I build and run cloud systems.
         </p>
+
+        <div class="text-center my-4">
+          <a href="{{ url_for('static', filename='assets/Martijn_Motmans_CV.pdf') }}" target="_blank"
+             class="btn btn-primary me-2">
+            <i class="fas fa-file-download me-1"></i> Download CV
+          </a>
+          <a href="https://github.com/MartijnMGit" target="_blank" class="btn btn-outline-dark">
+            <i class="fab fa-github me-1"></i> GitHub
+          </a>
+        </div>
 
           <div class="text-center">
             <img src="../static/assets/img/profilepic.jpg"
@@ -105,9 +118,10 @@
                     <ul class="list-unstyled mb-0 text-center">
                       <li>
                         <img src="data:image/png;base64,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" alt="AWS Logo" style="height:24px; vertical-align:middle;">
-                        : EC2, S3, IAM, VPC, RDS/Aurora, DynamoDB, Lambda, ECS/EKS, ALB/ELB, CloudFormation, CloudWatch, Elastic Beanstalk, Route 53, SNS, SQS, EFS, API Gateway, AWS CI/CD, SAM
+                        <strong>Hands-on:</strong> EC2, S3, IAM, VPC, RDS, DynamoDB, Lambda, Step Functions, API Gateway, EventBridge, CloudFront, Route 53, ACM, SNS, Rekognition, CloudWatch, CloudFormation, ALB, Elastic Beanstalk, AWS Budgets
                       </li>
-                      <li>Docker, Terraform</li>
+                      <li><strong>Certified, building experience:</strong> ECS/EKS, SQS, EFS, SAM</li>
+                      <li>Terraform, GitHub Actions (OIDC), Docker (learning)</li>
                     </ul>
                   </div>
                 </div>
@@ -134,9 +148,9 @@
                     <i class="fas fa-database fa-2x text-warning mb-2"></i>
                     <h5 class="card-title mb-3">Databases & Tools</h5>
                     <ul class="list-unstyled mb-0 text-center">
-                      <li>SQL, PostgreSQL</li>
+                      <li>SQL (MySQL, SQLite), DynamoDB (NoSQL)</li>
                       <li>Git & GitHub</li>
-                      <li>Linux</li>
+                      <li>Linux, Nginx, systemd</li>
                       <li>GitHub Copilot, Claude Code</li>
                     </ul>
                   </div>
